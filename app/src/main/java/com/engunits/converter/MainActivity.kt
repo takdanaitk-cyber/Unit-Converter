@@ -15,7 +15,11 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -88,6 +92,52 @@ fun AppTheme(content: @Composable () -> Unit) {
 }
 
 private fun <T> List<T>.with(i: Int, v: T): List<T> = toMutableList().also { it[i] = v }
+
+/** ไอคอนและสีประจำหมวด เรียงตามลำดับเดียวกับ Categories ใน Units.kt */
+private val CategoryIcons = listOf(
+    R.drawable.ic_cat_temperature,
+    R.drawable.ic_cat_pressure,
+    R.drawable.ic_cat_flow,
+    R.drawable.ic_cat_speed,
+    R.drawable.ic_cat_weight,
+    R.drawable.ic_cat_time,
+    R.drawable.ic_cat_length,
+    R.drawable.ic_cat_area,
+    R.drawable.ic_cat_volume,
+    R.drawable.ic_cat_energy,
+)
+
+private val CategoryColors = listOf(
+    Color(0xFFE53935), // อุณหภูมิ
+    Color(0xFF8E24AA), // ความดัน
+    Color(0xFF039BE5), // อัตราการไหล
+    Color(0xFFFB8C00), // ความเร็ว
+    Color(0xFF6D4C41), // น้ำหนัก
+    Color(0xFF3949AB), // เวลา
+    Color(0xFF00897B), // ระยะ
+    Color(0xFF7CB342), // พื้นที่
+    Color(0xFF00ACC1), // ปริมาตร
+    Color(0xFFFDD835), // พลังงาน
+)
+
+@Composable
+fun CategoryBadge(index: Int, selected: Boolean) {
+    val color = CategoryColors.getOrElse(index) { Color(0xFF607D8B) }
+    val icon = CategoryIcons.getOrNull(index) ?: return
+    Box(
+        modifier = Modifier
+            .size(if (selected) 40.dp else 34.dp)
+            .background(if (selected) color else color.copy(alpha = 0.75f), CircleShape),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painterResource(icon),
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(if (selected) 24.dp else 20.dp),
+        )
+    }
+}
 
 private const val LANG_TH = "th-TH"
 private const val LANG_EN = "en-US"
@@ -164,7 +214,12 @@ fun App() {
         Column(Modifier.padding(pad).fillMaxSize()) {
             ScrollableTabRow(selectedTabIndex = tab, edgePadding = 8.dp) {
                 Categories.forEachIndexed { i, c ->
-                    Tab(selected = tab == i, onClick = { tab = i }, text = { Text(c.title) })
+                    Tab(
+                        selected = tab == i,
+                        onClick = { tab = i },
+                        icon = { CategoryBadge(i, tab == i) },
+                        text = { Text(c.title, maxLines = 1) },
+                    )
                 }
             }
             ConverterScreen(
